@@ -11,8 +11,8 @@ android {
         applicationId = "com.vibe.dialer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.2.3-alpha"
+        versionCode = 7
+        versionName = "0.2.5-alpha"
     }
 
     buildTypes {
