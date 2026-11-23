@@ -6,34 +6,60 @@
     android:background="@drawable/bg_main">
 
     <LinearLayout
+        android:id="@+id/callInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="56dp"
         android:gravity="center"
         android:orientation="vertical">
         <TextView android:id="@+id/callStateText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Вызов" android:textColor="#CCFFFFFF" android:textSize="16sp"/>
         <TextView android:id="@+id/callerText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Неизвестный номер" android:textColor="@color/white" android:textSize="32sp" android:textStyle="bold"/>
     </LinearLayout>
 
+    <!-- Compact Orbit strip -->
+    <LinearLayout
+        android:id="@+id/orbitStrip"
+        android:layout_width="52dp"
+        android:layout_height="160dp"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_glass_panel"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="6dp"
+        android:visibility="gone">
+        <View android:layout_width="24dp" android:layout_height="4dp" android:background="#88FFFFFF"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="|||" android:textColor="@color/white" android:textSize="18sp"/>
+    </LinearLayout>
+
+    <!-- Main controls panel -->
     <LinearLayout
         android:id="@+id/inCallControls"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="72dp"
+        android:layout_marginBottom="56dp"
         android:background="@drawable/bg_glass_panel"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="16dp">
 
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
-            <ImageButton android:id="@+id/muteBtn" android:layout_width="64dp" android:layout_height="64dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_lock_silent_mode" android:tint="@color/white"/>
-            <ImageButton android:id="@+id/speakerBtn" android:layout_width="64dp" android:layout_height="64dp" android:layout_marginStart="16dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_lock_silent_mode_off" android:tint="@color/white"/>
+        <LinearLayout android:id="@+id/quickRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center">
+            <ImageButton android:id="@+id/muteBtn" android:layout_width="60dp" android:layout_height="60dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_lock_silent_mode" android:tint="@color/white"/>
+            <ImageButton android:id="@+id/speakerBtn" android:layout_width="60dp" android:layout_height="60dp" android:layout_marginStart="12dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_lock_silent_mode_off" android:tint="@color/white"/>
+            <ImageButton android:id="@+id/holdBtn" android:layout_width="60dp" android:layout_height="60dp" android:layout_marginStart="12dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_media_pause" android:tint="@color/white"/>
         </LinearLayout>
 
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:orientation="horizontal" android:gravity="center">
-            <ImageButton android:id="@+id/answerBtn" android:layout_width="76dp" android:layout_height="76dp" android:background="@drawable/bg_call" android:src="@android:drawable/ic_menu_call" android:tint="@color/white" android:visibility="gone"/>
-            <ImageButton android:id="@+id/hangupBtn" android:layout_width="76dp" android:layout_height="76dp" android:layout_marginStart="20dp" android:background="@drawable/bg_hangup" android:src="@android:drawable/ic_menu_close_clear_cancel" android:tint="@color/white"/>
+        <LinearLayout android:id="@+id/extraRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal" android:gravity="center" android:visibility="gone">
+            <ImageButton android:id="@+id/addCallBtn" android:layout_width="56dp" android:layout_height="56dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_input_add" android:tint="@color/white"/>
+            <ImageButton android:id="@+id/dialNewBtn" android:layout_width="56dp" android:layout_height="56dp" android:layout_marginStart="12dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_dialog_dialer" android:tint="@color/white"/>
+            <ImageButton android:id="@+id/mergeBtn" android:layout_width="56dp" android:layout_height="56dp" android:layout_marginStart="12dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_menu_call" android:tint="@color/white"/>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:gravity="center" android:orientation="horizontal">
+            <ImageButton android:id="@+id/expandBtn" android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/arrow_down_float" android:tint="@color/white"/>
+            <ImageButton android:id="@+id/answerBtn" android:layout_width="72dp" android:layout_height="72dp" android:layout_marginStart="16dp" android:background="@drawable/bg_call" android:src="@android:drawable/ic_menu_call" android:tint="@color/white" android:visibility="gone"/>
+            <ImageButton android:id="@+id/hangupBtn" android:layout_width="72dp" android:layout_height="72dp" android:layout_marginStart="16dp" android:background="@drawable/bg_hangup" android:src="@android:drawable/ic_menu_close_clear_cancel" android:tint="@color/white"/>
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>
