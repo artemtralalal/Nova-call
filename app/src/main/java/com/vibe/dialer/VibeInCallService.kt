@@ -74,12 +74,12 @@ class VibeInCallService : InCallService() {
             builder.addAction(android.R.drawable.ic_menu_call, "Ответить", answerIntent)
             builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Отклонить", hangupIntent)
             if (Build.VERSION.SDK_INT >= 31) {
-                try { builder.setStyle(NotificationCompat.CallStyle.forIncomingCall(person, hangupIntent, answerIntent)) } catch (_: Exception) {}
+                try { builder.setStyle(NotificationCompat.CallStyle.forIncomingCall(person, hangupIntent, answerIntent)) } catch (_: Throwable) {}
             }
         } else {
             builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Сбросить", hangupIntent)
             if (Build.VERSION.SDK_INT >= 31) {
-                try { builder.setStyle(NotificationCompat.CallStyle.forOngoingCall(person, hangupIntent)) } catch (_: Exception) {}
+                try { builder.setStyle(NotificationCompat.CallStyle.forOngoingCall(person, hangupIntent)) } catch (_: Throwable) {}
             }
         }
         val n = builder.build()
