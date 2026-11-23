@@ -31,6 +31,10 @@ class InCallActivity : AppCompatActivity() {
     private lateinit var speakerBtn: ImageButton
     private lateinit var holdBtn: ImageButton
     private lateinit var expandBtn: ImageButton
+    private lateinit var googleSwipe: View
+    private lateinit var swipeKnob: ImageButton
+    private lateinit var xiaomiIncoming: View
+    private lateinit var minimizeBtn: ImageButton
     private var muted = false
     private var speaker = false
     private var expanded = false
@@ -54,11 +58,16 @@ class InCallActivity : AppCompatActivity() {
             speakerBtn = findViewById(R.id.speakerBtn)
             holdBtn = findViewById(R.id.holdBtn)
             expandBtn = findViewById(R.id.expandBtn)
+            googleSwipe = findViewById(R.id.googleSwipe)
+            swipeKnob = findViewById(R.id.swipeKnob)
+            xiaomiIncoming = findViewById(R.id.xiaomiIncoming)
+            minimizeBtn = findViewById(R.id.minimizeBtn)
 
             applyMode()
             setupDrag(controls)
             setupDrag(orbitStrip)
             setupButtons()
+            setupStyleControls()
             handleIntent(intent)
         } catch (_: Exception) { finish() }
     }
@@ -78,6 +87,41 @@ class InCallActivity : AppCompatActivity() {
 
     override fun onStart() { super.onStart(); CallManager.addListener(callListener) }
     override fun onStop() { CallManager.removeListener(callListener); super.onStop() }
+
+    private fun setupStyleControls() {
+        minimizeBtn.setOnClickListener { pressAnim(it); moveTaskToBack(true) }
+        findViewById<ImageButton>(R.id.xiaomiAnswer).setOnClickListener { pressAnim(it); CallManager.answer() }
+        findViewById<ImageButton>(R.id.xiaomiDecline).setOnClickListener { pressAnim(it); doHangup() }
+
+        var downX = 0f; var startX = 0f
+        swipeKnob.setOnTouchListener { v, e ->
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> { downX = e.rawX; startX = v.translationX; true }
+                MotionEvent.ACTION_MOVE -> { val dx = (e.rawX - downX).coerceIn(-180f,180f); v.translationX = startX + dx; true }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    val tx = v.translationX
+                    if (tx > 120f) { CallManager.answer() }
+                    else if (tx < -120f) { doHangup() }
+                    v.animate().translationX(0f).setDuration(180).start(); true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun applyStyleForCall(state: Int) {
+        val style = prefs.callStyle
+        val incoming = state == Call.STATE_RINGING
+        googleSwipe.isVisible = style == "google" && incoming
+        xiaomiIncoming.isVisible = style == "xiaomi" && incoming
+        if (style == "xiaomi" && incoming) {
+            xiaomiIncoming.alpha = 0f; xiaomiIncoming.translationY = 120f
+            xiaomiIncoming.animate().alpha(1f).translationY(0f).setDuration(350).setInterpolator(android.view.animation.OvershootInterpolator(1f)).start()
+        }
+        if (style == "google" || style == "xiaomi") {
+            if (incoming) { controls.isVisible = false; orbitStrip.isVisible = false }
+        }
+    }
 
     private fun applyMode() {
         val right = prefs.inCallRight
@@ -190,7 +234,14 @@ class InCallActivity : AppCompatActivity() {
             Call.STATE_RINGING, Call.STATE_DIALING, Call.STATE_CONNECTING -> root.setBackgroundColor(0xFF101828.toInt())
             Call.STATE_DISCONNECTED -> root.setBackgroundColor(0xFF2A1014.toInt())
         }
-        answerBtn.isVisible = call.state == Call.STATE_RINGING
+        applyStyleForCall(call.state)
+        val style = prefs.callStyle
+        val incoming = call.state == Call.STATE_RINGING
+        if (!(incoming && (style == "google" || style == "xiaomi"))) {
+            googleSwipe.isVisible = false; xiaomiIncoming.isVisible = false
+            if (!prefs.rightHandMode) { controls.isVisible = true; orbitStrip.isVisible = false }
+        }
+        answerBtn.isVisible = call.state == Call.STATE_RINGING && style == "vibe"
         if (call.state == Call.STATE_DISCONNECTED && !ending) { ending = true; endCallUi { playEndSound { if (!isFinishing) finish() } } }
     }
 
