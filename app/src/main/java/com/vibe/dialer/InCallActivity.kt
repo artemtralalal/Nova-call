@@ -72,6 +72,7 @@ class InCallActivity : AppCompatActivity() {
             "answer" -> CallManager.answer()
             "hangup" -> doHangup()
         }
+    }
 
     override fun onStart() { super.onStart(); CallManager.addListener(callListener) }
     override fun onStop() { CallManager.removeListener(callListener); super.onStop() }
