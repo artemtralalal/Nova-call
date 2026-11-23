@@ -261,13 +261,15 @@ class MainActivity : AppCompatActivity() {
         val scale = findViewById<SeekBar>(R.id.scaleSeek)
         val orbitScale = findViewById<SeekBar>(R.id.orbitScaleSeek)
         val endSoundBtn = findViewById<Button>(R.id.endSoundBtn)
+        val callStyleBtn = findViewById<Button>(R.id.callStyleBtn)
         val shapeBtn = findViewById<Button>(R.id.shapeBtn)
         right.isChecked = prefs.rightHandMode; haptic.isChecked = prefs.haptic; theme.isChecked = prefs.themeMode == "light"
         distort.isChecked = prefs.distortion; distSeek.progress = prefs.distortionAmount
         glass.progress = prefs.glassIntensity; scale.progress = (prefs.buttonScale - 70).coerceIn(0,70); orbitScale.progress = (prefs.orbitScale - 70).coerceIn(0,70)
         fun updEnd() { endSoundBtn.text = "Звук сброса: " + when(prefs.endSound){ "samsung"->"Samsung"; "skype"->"Skype"; "facetime"->"FaceTime"; "none"->"Без звука"; else->"Android" } }
         fun updShape() { shapeBtn.text = "Форма кнопок: " + when(prefs.buttonShape){ "rounded"->"Скруглённая"; "squircle"->"Squircle"; else->"Круг" } }
-        updEnd(); updShape()
+        fun updCallStyle() { callStyleBtn.text = "Стиль звонка: " + when(prefs.callStyle){ "google"->"Google Phone"; "xiaomi"->"Xiaomi"; "samsung"->"Samsung"; else->"Vibe" } }
+        updEnd(); updShape(); updCallStyle()
         right.setOnCheckedChangeListener { _, c -> prefs.rightHandMode = c; applyRightHandMode(); buildKeypad() }
         haptic.setOnCheckedChangeListener { _, c -> prefs.haptic = c }
         theme.setOnCheckedChangeListener { _, c -> prefs.themeMode = if (c) "light" else "dark"; recreate() }
@@ -277,6 +279,7 @@ class MainActivity : AppCompatActivity() {
         scale.setOnSeekBarChangeListener(simpleSeek { prefs.buttonScale = it + 70; buildKeypad() })
         orbitScale.setOnSeekBarChangeListener(simpleSeek { prefs.orbitScale = it + 70; buildKeypad(); applyRightHandMode() })
         endSoundBtn.setOnClickListener { val opts = arrayOf("Android (Pixel)","Samsung","Skype","FaceTime","Без звука"); val vals = arrayOf("android","samsung","skype","facetime","none"); android.app.AlertDialog.Builder(this).setTitle("Звук сброса").setItems(opts){_,w-> prefs.endSound = vals[w]; updEnd() }.show() }
+        callStyleBtn.setOnClickListener { val opts = arrayOf("Vibe","Google Phone","Xiaomi","Samsung"); val vals = arrayOf("vibe","google","xiaomi","samsung"); android.app.AlertDialog.Builder(this).setTitle("Стиль звонка").setItems(opts){_,w-> prefs.callStyle = vals[w]; updCallStyle() }.show() }
         shapeBtn.setOnClickListener { val opts = arrayOf("Круг","Скруглённая","Squircle"); val vals = arrayOf("circle","rounded","squircle"); android.app.AlertDialog.Builder(this).setTitle("Форма кнопок").setItems(opts){_,w-> prefs.buttonShape = vals[w]; updShape(); buildKeypad() }.show() }
         findViewById<Button>(R.id.requestDefaultBtn).setOnClickListener { requestDefaultDialer() }
     }
