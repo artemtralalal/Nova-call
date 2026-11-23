@@ -65,6 +65,7 @@
                     <SeekBar android:id="@+id/orbitScaleSeek" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="70"/>
                     <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Звонки" android:textColor="#FF7CC4FF" android:textStyle="bold" android:textSize="14sp" android:layout_marginTop="14dp" android:layout_marginBottom="4dp"/>
                     <Button android:id="@+id/endSoundBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Звук сброса: Android"/>
+                    <Button android:id="@+id/callStyleBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Стиль звонка: Vibe"/>
                     <Button android:id="@+id/shapeBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Форма кнопок: Круг"/>
                     <Button android:id="@+id/requestDefaultBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Сделать звонилкой по умолчанию" />
                 </LinearLayout>
