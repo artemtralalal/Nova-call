@@ -15,6 +15,7 @@ import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -63,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         recentsList = findViewById(R.id.recentsList)
         contactsList = findViewById(R.id.contactsList)
 
+        applyTheme()
         buildKeypad()
         setupNav()
         setupSettings()
@@ -169,8 +171,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun selectNav(index: Int, animateBubble: Boolean) {
+        val old = navIndex
         navIndex = index; prefs.navIndex = index
-        pageRecents.isVisible = index == 0; pageContacts.isVisible = index == 1; pagePhone.isVisible = index == 2; pageSettings.isVisible = index == 3
+        val pages = listOf(pageRecents, pageContacts, pagePhone, pageSettings)
+        pages.forEachIndexed { i, v ->
+            val show = i == index
+            if (show && v.visibility != View.VISIBLE) {
+                v.isVisible = true
+                if (animateBubble) {
+                    val dir = if (index >= old) 1 else -1
+                    v.translationX = 40f * dir * resources.displayMetrics.density; v.alpha = 0f
+                    v.animate().translationX(0f).alpha(1f).setDuration(220).start()
+                } else { v.translationX = 0f; v.alpha = 1f }
+            } else if (!show) { v.isVisible = false }
+        }
         titleText.text = when (index) { 0 -> "Недавние"; 1 -> "Контакты"; 3 -> "Настройки"; else -> "Телефон" }
         bottomNav.post { updateBubble(animateBubble) }
         if (index == 0) loadRecents(); if (index == 1) loadContacts()
@@ -288,6 +302,29 @@ class MainActivity : AppCompatActivity() {
         }
         floatingKeypad.layoutParams = kpLp; showKeypadBtn.layoutParams = showLp; bottomNav.layoutParams = navLp
         floatingKeypad.requestLayout(); bottomNav.requestLayout(); bottomNav.post { updateBubble(false) }
+    }
+
+    private fun applyTheme() {
+        val light = prefs.themeMode == "light"
+        val root = findViewById<View>(R.id.root)
+        root.setBackgroundColor(if (light) 0xFFF2F4FA.toInt() else 0xFF101218.toInt())
+        val text = if (light) 0xFF1A1C22.toInt() else 0xFFFFFFFF.toInt()
+        val sub = if (light) 0xFF5A6070.toInt() else 0xCCFFFFFF.toInt()
+        titleText.setTextColor(text)
+        numberText.setTextColor(text)
+        findViewById<TextView>(R.id.defaultDialerHint).setTextColor(text)
+        listOf(R.id.navRecents,R.id.navContacts,R.id.navPhone,R.id.navSettings).forEach { findViewById<TextView>(it).setTextColor(text) }
+        fun walk(v: View) {
+            if (v is TextView && v !is Button) v.setTextColor(if (v.text.toString().contains("Недавние")||v.text.toString().contains("Контакты")||v.text.toString().contains("Телефон")||v.text.toString().contains("Настройки")) text else sub)
+            if (v is SwitchMaterial) v.setTextColor(text)
+            if (v is ViewGroup) for (i in 0 until v.childCount) walk(v.getChildAt(i))
+        }
+        walk(findViewById(R.id.pageSettings))
+        findViewById<View>(R.id.floatingKeypad).alpha = 1f
+        findViewById<View>(R.id.bottomNav).alpha = 1f
+        val grid = findViewById<GridLayout>(R.id.keypadGrid)
+        for (i in 0 until grid.childCount) { (grid.getChildAt(i) as? TextView)?.setTextColor(text) }
+        findViewById<View>(R.id.navBubble).alpha = if (light) 0.35f else 1f
     }
 
     private fun applyGlass() {
