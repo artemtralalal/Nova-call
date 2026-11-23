@@ -14,8 +14,8 @@ class DialerPrefs(context: Context) {
         set(v) = prefs.edit().putBoolean("keypad_expanded", v).apply()
 
     var navIndex: Int
-        get() = prefs.getInt("nav_index", 1).coerceIn(0, 3)
-        set(v) = prefs.edit().putInt("nav_index", v.coerceIn(0, 3)).apply()
+        get() = prefs.getInt("nav_index", 2).coerceIn(0, 4)
+        set(v) = prefs.edit().putInt("nav_index", v.coerceIn(0, 4)).apply()
 
     var glassIntensity: Int
         get() = prefs.getInt("glass_intensity", 60).coerceIn(0, 100)
@@ -68,4 +68,20 @@ class DialerPrefs(context: Context) {
     var callStyle: String
         get() = prefs.getString("call_style", "vibe") ?: "vibe" // vibe|google|xiaomi|samsung
         set(v) = prefs.edit().putString("call_style", v).apply()
+
+    var profileNumber: String
+        get() = prefs.getString("profile_number", "+7 000 000-00-00") ?: "+7 000 000-00-00"
+        set(v) = prefs.edit().putString("profile_number", v).apply()
+
+    var profileAvatar: String
+        get() = prefs.getString("profile_avatar", "") ?: ""
+        set(v) = prefs.edit().putString("profile_avatar", v).apply()
+
+    var profilePendingNumber: String
+        get() = prefs.getString("profile_pending_number", "") ?: ""
+        set(v) = prefs.edit().putString("profile_pending_number", v).apply()
+
+    var profilePendingUntil: Long
+        get() = prefs.getLong("profile_pending_until", 0L)
+        set(v) = prefs.edit().putLong("profile_pending_until", v).apply()
 }
