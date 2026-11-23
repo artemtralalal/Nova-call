@@ -1,17 +1,24 @@
 package com.vibe.dialer
 
+import android.content.ContentValues
 import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.media.MediaRecorder
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.telecom.Call
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -35,10 +42,21 @@ class InCallActivity : AppCompatActivity() {
     private lateinit var swipeKnob: ImageButton
     private lateinit var xiaomiIncoming: View
     private lateinit var minimizeBtn: ImageButton
+    private lateinit var shieldSpin: ProgressBar
+    private lateinit var shieldIcon: TextView
+    private lateinit var shieldCode: TextView
+    private lateinit var recordBadge: TextView
+    private lateinit var endStatusOverlay: LinearLayout
+    private lateinit var endStatusText: TextView
     private var muted = false
     private var speaker = false
     private var expanded = false
     private var ending = false
+    private var recording = false
+    private var recorder: MediaRecorder? = null
+    private var recordPath: String? = null
+    private var wasActive = false
+    private val securityCode = (1..5).map { ("ABCDEFGHJKLMNPQRSTUVWXYZ23456789").random() }.joinToString("")
 
     private val callListener: (Call?) -> Unit = { runOnUiThread { updateCall(it) } }
 
@@ -62,6 +80,14 @@ class InCallActivity : AppCompatActivity() {
             swipeKnob = findViewById(R.id.swipeKnob)
             xiaomiIncoming = findViewById(R.id.xiaomiIncoming)
             minimizeBtn = findViewById(R.id.minimizeBtn)
+            shieldSpin = findViewById(R.id.shieldSpin)
+            shieldIcon = findViewById(R.id.shieldIcon)
+            shieldCode = findViewById(R.id.shieldCode)
+            recordBadge = findViewById(R.id.recordBadge)
+            endStatusOverlay = findViewById(R.id.endStatusOverlay)
+            endStatusText = findViewById(R.id.endStatusText)
+            findViewById<Button>(R.id.endCloseBtn).setOnClickListener { finish() }
+            findViewById<ImageButton>(R.id.recordBtn).setOnClickListener { pressAnim(it); toggleRecording() }
 
             applyMode()
             setupDrag(controls)
@@ -85,11 +111,11 @@ class InCallActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() { super.onStart(); CallManager.addListener(callListener) }
+    override fun onStart() { super.onStart(); CallBubble.hide(this); CallManager.addListener(callListener) }
     override fun onStop() { CallManager.removeListener(callListener); super.onStop() }
 
     private fun setupStyleControls() {
-        minimizeBtn.setOnClickListener { pressAnim(it); moveTaskToBack(true) }
+        minimizeBtn.setOnClickListener { pressAnim(it); CallBubble.show(this); moveTaskToBack(true) }
         findViewById<ImageButton>(R.id.xiaomiAnswer).setOnClickListener { pressAnim(it); CallManager.answer() }
         findViewById<ImageButton>(R.id.xiaomiDecline).setOnClickListener { pressAnim(it); doHangup() }
 
@@ -217,7 +243,16 @@ class InCallActivity : AppCompatActivity() {
     }
 
     private fun updateCall(call: Call?) {
-        if (call == null) { callStateText.text = "Завершено"; if (!ending) { ending = true; endCallUi { playEndSound { if (!isFinishing) finish() } } }; return }
+        if (call == null) {
+            callStateText.text = "Завершено"
+            if (!ending) {
+                ending = true
+                val msg = if (wasActive) "Абонент сбросил вызов" else "Абонент не ответил"
+                showEndStatus(msg, red = wasActive)
+                playEndSound { }
+            }
+            return
+        }
         callerText.text = call.details?.handle?.schemeSpecificPart ?: "Неизвестный номер"
         callStateText.text = when (call.state) {
             Call.STATE_DIALING -> "Набор..."
@@ -230,9 +265,24 @@ class InCallActivity : AppCompatActivity() {
         }
         val root = findViewById<View>(R.id.incallRoot)
         when (call.state) {
-            Call.STATE_ACTIVE -> root.animate().alpha(1f).setDuration(200).start().also { root.setBackgroundColor(0xFF102018.toInt()) }
-            Call.STATE_RINGING, Call.STATE_DIALING, Call.STATE_CONNECTING -> root.setBackgroundColor(0xFF101828.toInt())
-            Call.STATE_DISCONNECTED -> root.setBackgroundColor(0xFF2A1014.toInt())
+            Call.STATE_DIALING, Call.STATE_CONNECTING -> {
+                root.setBackgroundColor(0xFF2A240F.toInt())
+                shieldSpin.isVisible = true; shieldIcon.text = "🛡"; shieldCode.isVisible = false
+            }
+            Call.STATE_ACTIVE -> {
+                wasActive = true
+                root.setBackgroundColor(0xFF102418.toInt())
+                shieldSpin.isVisible = false; shieldIcon.text = "✅"; shieldCode.isVisible = true; shieldCode.text = securityCode
+            }
+            Call.STATE_RINGING -> {
+                root.setBackgroundColor(0xFF101828.toInt())
+                shieldSpin.isVisible = true; shieldIcon.text = "🛡"; shieldCode.isVisible = false
+            }
+            Call.STATE_DISCONNECTED -> {
+                root.setBackgroundColor(0xFF2A1014.toInt())
+                shieldSpin.isVisible = false; shieldIcon.text = "❌"
+            }
+            else -> {}
         }
         applyStyleForCall(call.state)
         val style = prefs.callStyle
@@ -242,7 +292,12 @@ class InCallActivity : AppCompatActivity() {
             if (!prefs.rightHandMode) { controls.isVisible = true; orbitStrip.isVisible = false }
         }
         answerBtn.isVisible = call.state == Call.STATE_RINGING && style == "vibe"
-        if (call.state == Call.STATE_DISCONNECTED && !ending) { ending = true; endCallUi { playEndSound { if (!isFinishing) finish() } } }
+        if (call.state == Call.STATE_DISCONNECTED && !ending) {
+            ending = true
+            val msg = if (wasActive) "Абонент сбросил вызов" else "Абонент не ответил"
+            showEndStatus(msg, red = wasActive)
+            playEndSound { }
+        }
     }
 
     private fun setupDrag(target: View) {
@@ -280,7 +335,61 @@ class InCallActivity : AppCompatActivity() {
         v.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(180).setInterpolator(android.view.animation.OvershootInterpolator(2f)).start()
     }
 
+    private fun toggleRecording() {
+        if (recording) { stopRecording(); return }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(android.Manifest.permission.RECORD_AUDIO), 2001); return
+            }
+            val name = "vibe_call_${System.currentTimeMillis()}.m4a"
+            val out = java.io.File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), name)
+            recordPath = out.absolutePath
+            val r = if (Build.VERSION.SDK_INT >= 31) MediaRecorder(this) else @Suppress("DEPRECATION") MediaRecorder()
+            r.setAudioSource(MediaRecorder.AudioSource.MIC)
+            r.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            r.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            r.setOutputFile(recordPath)
+            r.prepare(); r.start()
+            recorder = r; recording = true
+            recordBadge.isVisible = true
+            recordBadge.text = "Запись... нажмите ещё раз для остановки"
+            findViewById<View>(R.id.incallRoot).setBackgroundColor(0xFF1A1030.toInt())
+        } catch (_: Exception) { recording = false; recordBadge.isVisible = false }
+    }
+
+    private fun stopRecording() {
+        try { recorder?.stop() } catch (_: Exception) {}
+        try { recorder?.release() } catch (_: Exception) {}
+        recorder = null; recording = false
+        recordBadge.isVisible = false
+        // copy to Downloads best-effort
+        try {
+            val src = recordPath?.let { java.io.File(it) } ?: return
+            if (Build.VERSION.SDK_INT >= 29) {
+                val values = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, src.name)
+                    put(MediaStore.Downloads.MIME_TYPE, "audio/mp4")
+                    put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/VibeDialer")
+                }
+                val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                if (uri != null) contentResolver.openOutputStream(uri)?.use { os -> src.inputStream().use { it.copyTo(os) } }
+            } else {
+                val dstDir = java.io.File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "VibeDialer")
+                dstDir.mkdirs(); src.copyTo(java.io.File(dstDir, src.name), overwrite = true)
+            }
+        } catch (_: Exception) {}
+        findViewById<View>(R.id.incallRoot).setBackgroundColor(0xFF102018.toInt())
+    }
+
+    private fun showEndStatus(text: String, red: Boolean) {
+        endStatusOverlay.isVisible = true
+        endStatusText.text = text
+        endStatusOverlay.setBackgroundColor(if (red) 0xCC2A1014.toInt() else 0xCC1A1A10.toInt())
+        controls.isVisible = false; orbitStrip.isVisible = false; googleSwipe.isVisible = false; xiaomiIncoming.isVisible = false
+    }
+
     private fun endCallUi(end: () -> Unit) {
+        if (recording) stopRecording()
         controls.animate().translationY(200f).alpha(0f).setDuration(220).withEndAction {
             findViewById<View>(R.id.incallRoot).animate().alpha(0.35f).setDuration(180).withEndAction(end).start()
         }.start()
