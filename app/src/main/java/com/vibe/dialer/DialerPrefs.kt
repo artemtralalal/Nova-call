@@ -14,24 +14,20 @@ class DialerPrefs(context: Context) {
         set(v) = prefs.edit().putBoolean("keypad_expanded", v).apply()
 
     var navIndex: Int
-        get() = prefs.getInt("nav_index", 1).coerceIn(0, 2)
-        set(v) = prefs.edit().putInt("nav_index", v.coerceIn(0, 2)).apply()
-
-    var navBubbleX: Float
-        get() = prefs.getFloat("nav_bubble_x", -1f)
-        set(v) = prefs.edit().putFloat("nav_bubble_x", v).apply()
+        get() = prefs.getInt("nav_index", 1).coerceIn(0, 3)
+        set(v) = prefs.edit().putInt("nav_index", v.coerceIn(0, 3)).apply()
 
     var glassIntensity: Int
         get() = prefs.getInt("glass_intensity", 60).coerceIn(0, 100)
         set(v) = prefs.edit().putInt("glass_intensity", v.coerceIn(0, 100)).apply()
 
-    var blurAmount: Int
-        get() = prefs.getInt("blur_amount", 50).coerceIn(0, 100)
-        set(v) = prefs.edit().putInt("blur_amount", v.coerceIn(0, 100)).apply()
-
     var buttonScale: Int
         get() = prefs.getInt("button_scale", 100).coerceIn(70, 140)
         set(v) = prefs.edit().putInt("button_scale", v.coerceIn(70, 140)).apply()
+
+    var orbitScale: Int
+        get() = prefs.getInt("orbit_scale", 90).coerceIn(70, 140)
+        set(v) = prefs.edit().putInt("orbit_scale", v.coerceIn(70, 140)).apply()
 
     var haptic: Boolean
         get() = prefs.getBoolean("haptic", true)
@@ -44,4 +40,28 @@ class DialerPrefs(context: Context) {
     var inCallOffsetY: Float
         get() = prefs.getFloat("incall_offset_y", 0f)
         set(v) = prefs.edit().putFloat("incall_offset_y", v).apply()
+
+    var inCallRight: Boolean
+        get() = prefs.getBoolean("incall_right", true)
+        set(v) = prefs.edit().putBoolean("incall_right", v).apply()
+
+    var themeMode: String
+        get() = prefs.getString("theme_mode", "dark") ?: "dark" // dark|light
+        set(v) = prefs.edit().putString("theme_mode", v).apply()
+
+    var endSound: String
+        get() = prefs.getString("end_sound", "android") ?: "android" // android|samsung|skype|none
+        set(v) = prefs.edit().putString("end_sound", v).apply()
+
+    var buttonShape: String
+        get() = prefs.getString("button_shape", "circle") ?: "circle" // circle|rounded|squircle
+        set(v) = prefs.edit().putString("button_shape", v).apply()
+
+    var distortion: Boolean
+        get() = prefs.getBoolean("distortion", true)
+        set(v) = prefs.edit().putBoolean("distortion", v).apply()
+
+    var distortionAmount: Int
+        get() = prefs.getInt("distortion_amount", 40).coerceIn(0, 100)
+        set(v) = prefs.edit().putInt("distortion_amount", v.coerceIn(0, 100)).apply()
 }
