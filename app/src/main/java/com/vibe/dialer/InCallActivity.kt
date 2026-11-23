@@ -350,7 +350,7 @@ class InCallActivity : AppCompatActivity() {
             val out = java.io.File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), name)
             recordPath = out.absolutePath
             val r = if (Build.VERSION.SDK_INT >= 31) MediaRecorder(this) else @Suppress("DEPRECATION") MediaRecorder()
-            r.setAudioSource(MediaRecorder.AudioSource.MIC)
+            r.setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
             r.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             r.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             r.setOutputFile(recordPath)
