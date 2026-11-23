@@ -58,7 +58,20 @@ class InCallActivity : AppCompatActivity() {
         setupDrag(controls)
         setupDrag(orbitStrip)
         setupButtons()
+        handleIntent(intent)
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(i: Intent?) {
+        when (i?.getStringExtra("action")) {
+            "answer" -> CallManager.answer()
+            "hangup" -> doHangup()
+        }
 
     override fun onStart() { super.onStart(); CallManager.addListener(callListener) }
     override fun onStop() { CallManager.removeListener(callListener); super.onStop() }
@@ -123,7 +136,7 @@ class InCallActivity : AppCompatActivity() {
         } catch (_: Exception) {}
     }
 
-    private fun playEndSound() {
+    private fun playEndSound(onDone: () -> Unit) {
         try {
             val res = when (prefs.endSound) {
                 "none" -> 0
@@ -132,18 +145,21 @@ class InCallActivity : AppCompatActivity() {
                 "facetime" -> R.raw.end_facetime
                 else -> R.raw.end_android
             }
-            if (res == 0) return
-            val mp = MediaPlayer.create(this, res) ?: return
-            mp.setOnCompletionListener { it.release() }
+            if (res == 0) { onDone(); return }
+            val mp = MediaPlayer.create(applicationContext, res)
+            if (mp == null) { onDone(); return }
+            mp.setOnCompletionListener { try { it.release() } catch (_: Exception) {}; onDone() }
+            mp.setOnErrorListener { p, _, _ -> try { p.release() } catch (_: Exception) {}; onDone(); true }
             mp.start()
-        } catch (_: Exception) {}
+        } catch (_: Exception) { onDone() }
     }
 
     private fun doHangup() {
         if (ending) return; ending = true
-        playEndSound()
         CallManager.hangup()
-        endCallUi { if (!isFinishing) finish() }
+        endCallUi {
+            playEndSound { if (!isFinishing) finish() }
+        }
     }
 
     private fun showControlsFromStrip() {
@@ -154,7 +170,7 @@ class InCallActivity : AppCompatActivity() {
     }
 
     private fun updateCall(call: Call?) {
-        if (call == null) { callStateText.text = "Завершено"; if (!ending) { ending = true; playEndSound(); endCallUi { if (!isFinishing) finish() } }; return }
+        if (call == null) { callStateText.text = "Завершено"; if (!ending) { ending = true; endCallUi { playEndSound { if (!isFinishing) finish() } } }; return }
         callerText.text = call.details?.handle?.schemeSpecificPart ?: "Неизвестный номер"
         callStateText.text = when (call.state) {
             Call.STATE_DIALING -> "Набор..."
@@ -165,8 +181,14 @@ class InCallActivity : AppCompatActivity() {
             Call.STATE_DISCONNECTED -> "Завершено"
             else -> "Звонок"
         }
+        val root = findViewById<View>(R.id.incallRoot)
+        when (call.state) {
+            Call.STATE_ACTIVE -> root.animate().alpha(1f).setDuration(200).start().also { root.setBackgroundColor(0xFF102018.toInt()) }
+            Call.STATE_RINGING, Call.STATE_DIALING, Call.STATE_CONNECTING -> root.setBackgroundColor(0xFF101828.toInt())
+            Call.STATE_DISCONNECTED -> root.setBackgroundColor(0xFF2A1014.toInt())
+        }
         answerBtn.isVisible = call.state == Call.STATE_RINGING
-        if (call.state == Call.STATE_DISCONNECTED && !ending) { ending = true; playEndSound(); endCallUi { if (!isFinishing) finish() } }
+        if (call.state == Call.STATE_DISCONNECTED && !ending) { ending = true; endCallUi { playEndSound { if (!isFinishing) finish() } } }
     }
 
     private fun setupDrag(target: View) {
