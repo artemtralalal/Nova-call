@@ -2,7 +2,7 @@ package com.vibe.dialer
 
 import android.content.Intent
 import android.media.AudioManager
-import android.net.Uri
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.telecom.Call
 import android.view.Gravity
@@ -34,6 +34,7 @@ class InCallActivity : AppCompatActivity() {
     private var muted = false
     private var speaker = false
     private var expanded = false
+    private var ending = false
 
     private val callListener: (Call?) -> Unit = { runOnUiThread { updateCall(it) } }
 
@@ -87,15 +88,15 @@ class InCallActivity : AppCompatActivity() {
         orbitStrip.setOnClickListener { pressAnim(it); showControlsFromStrip() }
         expandBtn.setOnClickListener { pressAnim(it); expanded = !expanded; extraRow.isVisible = expanded; expandBtn.rotation = if (expanded) 180f else 0f }
         answerBtn.setOnClickListener { pressAnim(it); CallManager.answer() }
-        hangupBtn.setOnClickListener { pressAnim(it); endCallUi { CallManager.hangup(); finish() } }
+        hangupBtn.setOnClickListener { pressAnim(it); doHangup() }
         muteBtn.setOnClickListener {
             pressAnim(it); muted = !muted
-            try { (getSystemService(AUDIO_SERVICE) as AudioManager).isMicrophoneMute = muted } catch (_: Exception) {}
+            applyAudio()
             muteBtn.alpha = if (muted) 1f else 0.75f
         }
         speakerBtn.setOnClickListener {
             pressAnim(it); speaker = !speaker
-            try { (getSystemService(AUDIO_SERVICE) as AudioManager).isSpeakerphoneOn = speaker } catch (_: Exception) {}
+            applyAudio()
             speakerBtn.alpha = if (speaker) 1f else 0.75f
         }
         holdBtn.setOnClickListener {
@@ -109,7 +110,41 @@ class InCallActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.dialNewBtn).setOnClickListener {
             pressAnim(it); CallManager.hangup(); startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
         }
-        findViewById<ImageButton>(R.id.mergeBtn).setOnClickListener { pressAnim(it) /* merge requires conference; placeholder */ }
+        findViewById<ImageButton>(R.id.mergeBtn).setOnClickListener { pressAnim(it) }
+    }
+
+    private fun applyAudio() {
+        try {
+            val am = getSystemService(AUDIO_SERVICE) as AudioManager
+            am.mode = AudioManager.MODE_IN_CALL
+            am.isMicrophoneMute = muted
+            am.isSpeakerphoneOn = speaker
+            @Suppress("DEPRECATION")
+            if (speaker) am.route = am.route or AudioManager.ROUTE_SPEAKER else am.route = am.route and AudioManager.ROUTE_SPEAKER.inv()
+        } catch (_: Exception) {}
+    }
+
+    private fun playEndSound() {
+        try {
+            val res = when (prefs.endSound) {
+                "none" -> 0
+                "samsung" -> R.raw.end_samsung
+                "skype" -> R.raw.end_skype
+                "facetime" -> R.raw.end_facetime
+                else -> R.raw.end_android
+            }
+            if (res == 0) return
+            val mp = MediaPlayer.create(this, res) ?: return
+            mp.setOnCompletionListener { it.release() }
+            mp.start()
+        } catch (_: Exception) {}
+    }
+
+    private fun doHangup() {
+        if (ending) return; ending = true
+        playEndSound()
+        CallManager.hangup()
+        endCallUi { if (!isFinishing) finish() }
     }
 
     private fun showControlsFromStrip() {
@@ -120,7 +155,7 @@ class InCallActivity : AppCompatActivity() {
     }
 
     private fun updateCall(call: Call?) {
-        if (call == null) { callStateText.text = "Завершено"; endCallUi { if (!isFinishing) finish() }; return }
+        if (call == null) { callStateText.text = "Завершено"; if (!ending) { ending = true; playEndSound(); endCallUi { if (!isFinishing) finish() } }; return }
         callerText.text = call.details?.handle?.schemeSpecificPart ?: "Неизвестный номер"
         callStateText.text = when (call.state) {
             Call.STATE_DIALING -> "Набор..."
@@ -132,7 +167,7 @@ class InCallActivity : AppCompatActivity() {
             else -> "Звонок"
         }
         answerBtn.isVisible = call.state == Call.STATE_RINGING
-        if (call.state == Call.STATE_DISCONNECTED) endCallUi { if (!isFinishing) finish() }
+        if (call.state == Call.STATE_DISCONNECTED && !ending) { ending = true; playEndSound(); endCallUi { if (!isFinishing) finish() } }
     }
 
     private fun setupDrag(target: View) {
@@ -172,7 +207,7 @@ class InCallActivity : AppCompatActivity() {
 
     private fun endCallUi(end: () -> Unit) {
         controls.animate().translationY(200f).alpha(0f).setDuration(220).withEndAction {
-            findViewById<View>(R.id.incallRoot).animate().alpha(0.4f).setDuration(180).withEndAction(end).start()
+            findViewById<View>(R.id.incallRoot).animate().alpha(0.35f).setDuration(180).withEndAction(end).start()
         }.start()
     }
 }
