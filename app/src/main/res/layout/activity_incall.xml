@@ -53,7 +53,7 @@
         <LinearLayout android:id="@+id/extraRow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal" android:gravity="center" android:visibility="gone">
             <ImageButton android:id="@+id/addCallBtn" android:layout_width="56dp" android:layout_height="56dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_input_add" android:tint="@color/white"/>
             <ImageButton android:id="@+id/dialNewBtn" android:layout_width="56dp" android:layout_height="56dp" android:layout_marginStart="12dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_dialog_dialer" android:tint="@color/white"/>
-            <ImageButton android:id="@+id/mergeBtn" android:layout_width="56dp" android:layout_height="56dp" android:layout_marginStart="12dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_menu_call" android:tint="@color/white"/>
+            <ImageButton android:id="@+id/recordBtn" android:layout_width="56dp" android:layout_height="56dp" android:layout_marginStart="12dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_btn_speak_now" android:tint="@color/white"/>
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:gravity="center" android:orientation="horizontal">
@@ -76,5 +76,18 @@
     </LinearLayout>
 
     <ImageButton android:id="@+id/minimizeBtn" android:layout_width="44dp" android:layout_height="44dp" android:layout_gravity="top|start" android:layout_margin="16dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/arrow_down_float" android:tint="@color/white"/>
+
+    <LinearLayout android:id="@+id/shieldBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top|end" android:layout_margin="16dp" android:background="@drawable/bg_glass_panel" android:gravity="center" android:orientation="horizontal" android:padding="8dp">
+        <ProgressBar android:id="@+id/shieldSpin" style="?android:attr/progressBarStyleSmall" android:layout_width="18dp" android:layout_height="18dp"/>
+        <TextView android:id="@+id/shieldIcon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🛡" android:textSize="16sp"/>
+        <TextView android:id="@+id/shieldCode" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:textColor="@color/white" android:textSize="12sp" android:visibility="gone"/>
+    </LinearLayout>
+
+    <TextView android:id="@+id/recordBadge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="16dp" android:background="@drawable/bg_glass_panel" android:padding="10dp" android:text="Запись..." android:textColor="#FFFF5A6A" android:visibility="gone"/>
+
+    <LinearLayout android:id="@+id/endStatusOverlay" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#AA000000" android:gravity="center" android:orientation="vertical" android:visibility="gone">
+        <TextView android:id="@+id/endStatusText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="28sp" android:textStyle="bold"/>
+        <Button android:id="@+id/endCloseBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Закрыть"/>
+    </LinearLayout>
 
 </FrameLayout>
