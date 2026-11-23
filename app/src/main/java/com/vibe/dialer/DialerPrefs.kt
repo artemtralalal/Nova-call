@@ -64,4 +64,8 @@ class DialerPrefs(context: Context) {
     var distortionAmount: Int
         get() = prefs.getInt("distortion_amount", 40).coerceIn(0, 100)
         set(v) = prefs.edit().putInt("distortion_amount", v.coerceIn(0, 100)).apply()
+
+    var callStyle: String
+        get() = prefs.getString("call_style", "vibe") ?: "vibe" // vibe|google|xiaomi|samsung
+        set(v) = prefs.edit().putString("call_style", v).apply()
 }
