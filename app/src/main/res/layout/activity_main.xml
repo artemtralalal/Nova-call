@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -22,15 +21,6 @@
             android:textSize="30sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/subtitleText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Vibe Dialer"
-            android:textColor="#99FFFFFF"
-            android:textSize="14sp" />
-
         <FrameLayout
             android:id="@+id/pageContainer"
             android:layout_width="match_parent"
@@ -38,83 +28,42 @@
             android:layout_weight="1"
             android:layout_marginTop="12dp">
 
-            <LinearLayout
-                android:id="@+id/pagePhone"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="top">
-
-                <TextView
-                    android:id="@+id/numberText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:minHeight="56dp"
-                    android:padding="8dp"
-                    android:textColor="@color/white"
-                    android:textSize="34sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/defaultDialerHint"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_glass_panel"
-                    android:padding="14dp"
-                    android:text="Нажмите, чтобы сделать Vibe Dialer звонилкой по умолчанию"
-                    android:textColor="@color/white"
-                    android:textSize="14sp" />
+            <LinearLayout android:id="@+id/pageRecents" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <Button android:id="@+id/filterAll" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Все"/>
+                    <Button android:id="@+id/filterMissed" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Пропущ."/>
+                    <Button android:id="@+id/filterOutgoing" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Исход."/>
+                    <Button android:id="@+id/filterRejected" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Отмен."/>
+                </LinearLayout>
+                <ListView android:id="@+id/recentsList" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:divider="#22FFFFFF" android:dividerHeight="1dp"/>
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/pageContacts"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:visibility="gone">
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Контакты будут здесь. Разрешите доступ к контактам в настройках системы."
-                    android:textColor="#CCFFFFFF"
-                    android:textSize="15sp"
-                    android:background="@drawable/bg_glass_panel"
-                    android:padding="16dp"/>
+            <LinearLayout android:id="@+id/pageContacts" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
+                <ListView android:id="@+id/contactsList" android:layout_width="match_parent" android:layout_height="match_parent" android:divider="#22FFFFFF" android:dividerHeight="1dp"/>
             </LinearLayout>
 
-            <ScrollView
-                android:id="@+id/pageSettings"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/rightHandSwitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Режим правой руки (Orbit)"
-                        android:textColor="@color/white" />
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/hapticSwitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Виброотклик"
-                        android:textColor="@color/white" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Прозрачность стекла" android:textColor="#CCFFFFFF" android:layout_marginTop="12dp"/>
+            <LinearLayout android:id="@+id/pagePhone" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="top">
+                <TextView android:id="@+id/numberText" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:minHeight="56dp" android:padding="8dp" android:textColor="@color/white" android:textSize="34sp" android:textStyle="bold" />
+                <TextView android:id="@+id/defaultDialerHint" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:background="@drawable/bg_glass_panel" android:padding="14dp" android:text="Нажмите, чтобы сделать Vibe Dialer звонилкой по умолчанию" android:textColor="@color/white" android:textSize="14sp" />
+            </LinearLayout>
+
+            <ScrollView android:id="@+id/pageSettings" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingBottom="120dp">
+                    <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/rightHandSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Режим правой руки (Orbit)" android:textColor="@color/white" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/hapticSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Виброотклик" android:textColor="@color/white" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/themeSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Светлая тема (Google style)" android:textColor="@color/white" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/distortionSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Искажение/стекло при нажатии" android:textColor="@color/white" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Сила искажения" android:textColor="#CCFFFFFF" android:layout_marginTop="8dp"/>
+                    <SeekBar android:id="@+id/distortionSeek" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Прозрачность стекла" android:textColor="#CCFFFFFF" android:layout_marginTop="8dp"/>
                     <SeekBar android:id="@+id/glassSeek" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100"/>
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Размер кнопок" android:textColor="#CCFFFFFF" android:layout_marginTop="12dp"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Размер кнопок (обычный)" android:textColor="#CCFFFFFF" android:layout_marginTop="8dp"/>
                     <SeekBar android:id="@+id/scaleSeek" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="70"/>
-                    <Button
-                        android:id="@+id/requestDefaultBtn"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="Сделать звонилкой по умолчанию" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Размер кнопок (Orbit)" android:textColor="#CCFFFFFF" android:layout_marginTop="8dp"/>
+                    <SeekBar android:id="@+id/orbitScaleSeek" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="70"/>
+                    <Button android:id="@+id/endSoundBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Звук сброса: Android"/>
+                    <Button android:id="@+id/shapeBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Форма кнопок: Круг"/>
+                    <Button android:id="@+id/requestDefaultBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Сделать звонилкой по умолчанию" />
                 </LinearLayout>
             </ScrollView>
         </FrameLayout>
@@ -125,72 +74,34 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp"
-        android:layout_marginBottom="96dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="92dp"
         android:background="@drawable/bg_glass_panel"
         android:orientation="vertical"
-        android:padding="14dp">
+        android:padding="10dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical">
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Клавиатура"
-                android:textColor="#CCFFFFFF" />
-            <ImageButton
-                android:id="@+id/hideKeypadBtn"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/bg_glass_button"
-                android:src="@android:drawable/arrow_down_float"
-                android:tint="@color/white" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Клавиатура" android:textColor="#CCFFFFFF" />
+            <ImageButton android:id="@+id/hideKeypadBtn" android:layout_width="34dp" android:layout_height="34dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/arrow_down_float" android:tint="@color/white" />
         </LinearLayout>
 
-        <GridLayout
-            android:id="@+id/keypadGrid"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:columnCount="3"
-            android:rowCount="4"
-            android:useDefaultMargins="true" />
+        <GridLayout android:id="@+id/keypadGrid" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:columnCount="3" android:rowCount="4" android:useDefaultMargins="true" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center">
-            <ImageButton
-                android:id="@+id/backspaceBtn"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:background="@drawable/bg_glass_button"
-                android:src="@android:drawable/ic_input_delete"
-                android:tint="@color/white" />
-            <ImageButton
-                android:id="@+id/callBtn"
-                android:layout_width="76dp"
-                android:layout_height="76dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                android:background="@drawable/bg_call"
-                android:src="@android:drawable/ic_menu_call"
-                android:tint="@color/white" />
-            <View android:layout_width="64dp" android:layout_height="64dp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:gravity="center">
+            <ImageButton android:id="@+id/backspaceBtn" android:layout_width="56dp" android:layout_height="56dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/ic_input_delete" android:tint="@color/white" />
+            <ImageButton android:id="@+id/callBtn" android:layout_width="68dp" android:layout_height="68dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:background="@drawable/bg_call" android:src="@android:drawable/ic_menu_call" android:tint="@color/white" />
+            <View android:layout_width="56dp" android:layout_height="56dp" />
         </LinearLayout>
     </LinearLayout>
 
     <ImageButton
         android:id="@+id/showKeypadBtn"
-        android:layout_width="62dp"
-        android:layout_height="62dp"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="100dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="96dp"
         android:background="@drawable/bg_glass_panel"
         android:src="@android:drawable/ic_dialog_dialer"
         android:tint="@color/white"
@@ -199,25 +110,17 @@
     <FrameLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="68dp"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp"
+        android:layout_margin="12dp"
         android:background="@drawable/bg_nav"
         android:padding="6dp">
-
-        <View
-            android:id="@+id/navBubble"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_nav_bubble" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-            <TextView android:id="@+id/navContacts" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Контакты" android:textColor="@color/white" android:textStyle="bold"/>
-            <TextView android:id="@+id/navPhone" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Телефон" android:textColor="@color/white" android:textStyle="bold"/>
-            <TextView android:id="@+id/navSettings" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Настройки" android:textColor="@color/white" android:textStyle="bold"/>
+        <View android:id="@+id/navBubble" android:layout_width="0dp" android:layout_height="match_parent" android:background="@drawable/bg_nav_bubble" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
+            <TextView android:id="@+id/navRecents" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Недавние" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
+            <TextView android:id="@+id/navContacts" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Контакты" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
+            <TextView android:id="@+id/navPhone" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Телефон" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
+            <TextView android:id="@+id/navSettings" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Настройки" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
         </LinearLayout>
     </FrameLayout>
 
