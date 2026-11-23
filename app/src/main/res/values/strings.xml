@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Vibe Dialer</string>
+    <string name="set_default_dialer">Сделать звонилкой по умолчанию</string>
+    <string name="contacts">Контакты</string>
+    <string name="phone">Телефон</string>
+    <string name="settings">Настройки</string>
+</resources>
