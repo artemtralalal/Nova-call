@@ -48,6 +48,7 @@ class InCallActivity : AppCompatActivity() {
     private lateinit var recordBadge: TextView
     private lateinit var endStatusOverlay: LinearLayout
     private lateinit var endStatusText: TextView
+    private lateinit var dynamicBg: DynamicCallBackgroundView
     private var muted = false
     private var speaker = false
     private var expanded = false
@@ -86,6 +87,7 @@ class InCallActivity : AppCompatActivity() {
             recordBadge = findViewById(R.id.recordBadge)
             endStatusOverlay = findViewById(R.id.endStatusOverlay)
             endStatusText = findViewById(R.id.endStatusText)
+            dynamicBg = findViewById(R.id.dynamicBg)
             findViewById<Button>(R.id.endCloseBtn).setOnClickListener { finish() }
             findViewById<ImageButton>(R.id.recordBtn).setOnClickListener { pressAnim(it); toggleRecording() }
 
@@ -265,20 +267,24 @@ class InCallActivity : AppCompatActivity() {
         val root = findViewById<View>(R.id.incallRoot)
         when (call.state) {
             Call.STATE_DIALING, Call.STATE_CONNECTING -> {
-                root.setBackgroundColor(0xFF2A240F.toInt())
+                root.setBackgroundColor(0x00000000)
+                dynamicBg.setMode(DynamicCallBackgroundView.Mode.WAITING)
                 shieldSpin.isVisible = true; shieldIcon.text = "🛡"; shieldCode.isVisible = false
             }
             Call.STATE_ACTIVE -> {
+                if (!wasActive) dynamicBg.showCheck() else dynamicBg.setMode(DynamicCallBackgroundView.Mode.ACTIVE)
                 wasActive = true
-                root.setBackgroundColor(0xFF102418.toInt())
+                root.setBackgroundColor(0x00000000)
                 shieldSpin.isVisible = false; shieldIcon.text = "✅"; shieldCode.isVisible = true; shieldCode.text = securityCode
             }
             Call.STATE_RINGING -> {
-                root.setBackgroundColor(0xFF101828.toInt())
+                root.setBackgroundColor(0x00000000)
+                dynamicBg.setMode(DynamicCallBackgroundView.Mode.WAITING)
                 shieldSpin.isVisible = true; shieldIcon.text = "🛡"; shieldCode.isVisible = false
             }
             Call.STATE_DISCONNECTED -> {
-                root.setBackgroundColor(0xFF2A1014.toInt())
+                root.setBackgroundColor(0x00000000)
+                dynamicBg.setMode(if (wasActive) DynamicCallBackgroundView.Mode.ENDED_REJECTED else DynamicCallBackgroundView.Mode.ENDED_NO_ANSWER)
                 shieldSpin.isVisible = false; shieldIcon.text = "❌"
             }
             else -> {}
@@ -381,10 +387,15 @@ class InCallActivity : AppCompatActivity() {
     }
 
     private fun showEndStatus(text: String, red: Boolean) {
-        endStatusOverlay.isVisible = true
-        endStatusText.text = text
-        endStatusOverlay.setBackgroundColor(if (red) 0xCC2A1014.toInt() else 0xCC1A1A10.toInt())
         controls.isVisible = false; orbitStrip.isVisible = false; googleSwipe.isVisible = false; xiaomiIncoming.isVisible = false
+        endStatusOverlay.alpha = 0f; endStatusOverlay.isVisible = true
+        endStatusText.text = text
+        endStatusText.setTextColor(if (red) 0xFFFF5A6A.toInt() else 0xFFB8860B.toInt())
+        val btn = findViewById<Button>(R.id.endCloseBtn)
+        btn.setTextColor(if (red) 0xFFFFFFFF.toInt() else 0xFF3A2A00.toInt())
+        btn.setBackgroundColor(if (red) 0xFFFF5A6A.toInt() else 0xFFFFCC33.toInt())
+        endStatusOverlay.setBackgroundColor(0x88000000.toInt())
+        endStatusOverlay.animate().alpha(1f).setStartDelay(900).setDuration(350).start()
     }
 
     private fun endCallUi(end: () -> Unit) {
