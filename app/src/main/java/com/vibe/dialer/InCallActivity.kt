@@ -116,11 +116,10 @@ class InCallActivity : AppCompatActivity() {
     private fun applyAudio() {
         try {
             val am = getSystemService(AUDIO_SERVICE) as AudioManager
-            am.mode = AudioManager.MODE_IN_CALL
+            @Suppress("DEPRECATION")
+            am.mode = AudioManager.MODE_IN_COMMUNICATION
             am.isMicrophoneMute = muted
             am.isSpeakerphoneOn = speaker
-            @Suppress("DEPRECATION")
-            if (speaker) am.route = am.route or AudioManager.ROUTE_SPEAKER else am.route = am.route and AudioManager.ROUTE_SPEAKER.inv()
         } catch (_: Exception) {}
     }
 
