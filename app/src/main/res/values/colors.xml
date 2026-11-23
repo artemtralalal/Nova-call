@@ -1,0 +1,12 @@
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="bg_top">#FF12141A</color>
+    <color name="bg_bottom">#FF090B10</color>
+    <color name="panel">#CC1E222B</color>
+    <color name="panel_stroke">#55FFFFFF</color>
+    <color name="accent">#FF7CC4FF</color>
+    <color name="accent2">#FFB58CFF</color>
+    <color name="danger">#FFFF5A6A</color>
+    <color name="green">#FF4CD964</color>
+</resources>
