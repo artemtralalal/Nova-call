@@ -45,6 +45,15 @@
             <LinearLayout android:id="@+id/pagePhone" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="top">
                 <TextView android:id="@+id/numberText" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:minHeight="56dp" android:padding="8dp" android:textColor="@color/white" android:textSize="34sp" android:textStyle="bold" />
                 <TextView android:id="@+id/defaultDialerHint" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:background="@drawable/bg_glass_panel" android:padding="14dp" android:text="Нажмите, чтобы сделать Vibe Dialer звонилкой по умолчанию" android:textColor="@color/white" android:textSize="14sp" />
+                <Button android:id="@+id/hideNumberBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Скрыть номер (код оператора)"/>
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/pageProfile" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center_horizontal" android:visibility="gone" android:padding="16dp">
+                <ImageView android:id="@+id/profileAvatar" android:layout_width="96dp" android:layout_height="96dp" android:src="@android:drawable/sym_def_app_icon" android:background="@drawable/bg_glass_panel" android:scaleType="centerCrop"/>
+                <Button android:id="@+id/changeAvatarBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Выбрать аватар"/>
+                <TextView android:id="@+id/profileNumber" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:textColor="@color/white" android:textSize="22sp" android:textStyle="bold" android:text="+7 000 000-00-00"/>
+                <Button android:id="@+id/changeNumberBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Изменить номер (симуляция)"/>
+                <TextView android:id="@+id/profileTimer" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#CCFFFFFF" android:text=""/>
             </LinearLayout>
 
             <ScrollView android:id="@+id/pageSettings" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone">
@@ -124,6 +133,7 @@
             <TextView android:id="@+id/navRecents" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Недавние" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
             <TextView android:id="@+id/navContacts" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Контакты" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
             <TextView android:id="@+id/navPhone" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Телефон" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
+            <TextView android:id="@+id/navProfile" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Профиль" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
             <TextView android:id="@+id/navSettings" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Настройки" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold"/>
         </LinearLayout>
     </FrameLayout>
