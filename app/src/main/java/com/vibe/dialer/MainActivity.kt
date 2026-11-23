@@ -202,7 +202,7 @@ class MainActivity : AppCompatActivity() {
         val items = mutableListOf<String>()
         val nums = mutableListOf<String>()
         val uri = CallLog.Calls.CONTENT_URI
-        val proj = arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE)
+        val proj = arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.CACHED_NAME)
         val sel = when (recentsFilter) {
             1 -> "${CallLog.Calls.TYPE}=${CallLog.Calls.MISSED_TYPE}"
             2 -> "${CallLog.Calls.TYPE}=${CallLog.Calls.OUTGOING_TYPE}"
@@ -210,20 +210,23 @@ class MainActivity : AppCompatActivity() {
             else -> null
         }
         contentResolver.query(uri, proj, sel, null, "${CallLog.Calls.DATE} DESC")?.use { c ->
-            val nI = c.getColumnIndex(CallLog.Calls.NUMBER); val tI = c.getColumnIndex(CallLog.Calls.TYPE); val dI = c.getColumnIndex(CallLog.Calls.DATE)
+            val nI = c.getColumnIndex(CallLog.Calls.NUMBER); val tI = c.getColumnIndex(CallLog.Calls.TYPE); val dI = c.getColumnIndex(CallLog.Calls.DATE); val cnI = c.getColumnIndex(CallLog.Calls.CACHED_NAME)
             var count = 0
             while (c.moveToNext() && count < 100) {
                 val num = c.getString(nI) ?: continue
                 val type = c.getInt(tI)
                 val date = c.getLong(dI)
+                val cached = if (cnI >= 0) c.getString(cnI) else null
+                val name = cached?.takeIf { it.isNotBlank() } ?: num
                 val label = when (type) { CallLog.Calls.MISSED_TYPE -> "Пропущенный"; CallLog.Calls.OUTGOING_TYPE -> "Исходящий"; CallLog.Calls.INCOMING_TYPE -> "Входящий"; CallLog.Calls.REJECTED_TYPE -> "Отменённый"; else -> "Звонок" }
                 val ds = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault()).format(Date(date))
-                items.add("$num • $label • $ds")
+                val sub = if (name == num) "$label • $ds" else "$num • $label • $ds"
+                items.add("$name\n$sub")
                 nums.add(num)
                 count++
             }
         }
-        recentsList.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items).apply { }
+        recentsList.adapter = themedAdapter(items)
         recentsList.setOnItemClickListener { _, _, pos, _ -> number.clear(); number.append(nums.getOrNull(pos) ?: ""); renderNumber(); selectNav(2, true) }
         recentsList.setOnItemLongClickListener { _, _, pos, _ -> placeCall(nums.getOrNull(pos) ?: ""); true }
     }
@@ -244,7 +247,7 @@ class MainActivity : AppCompatActivity() {
                 items.add("$name\n$phone"); nums.add(phone); count++
             }
         }
-        contactsList.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
+        contactsList.adapter = themedAdapter(items)
         contactsList.setOnItemClickListener { _, _, pos, _ -> placeCall(nums.getOrNull(pos) ?: "") }
     }
 
@@ -304,6 +307,26 @@ class MainActivity : AppCompatActivity() {
         floatingKeypad.requestLayout(); bottomNav.requestLayout(); bottomNav.post { updateBubble(false) }
     }
 
+    private fun themedAdapter(items: List<String>): ArrayAdapter<String> {
+        val light = prefs.themeMode == "light"
+        val text = if (light) 0xFF1A1C22.toInt() else 0xFFFFFFFF.toInt()
+        val sub = if (light) 0xFF5A6070.toInt() else 0xCCFFFFFF.toInt()
+        return object : ArrayAdapter<String>(this, android.R.layout.simple_list_item_2, android.R.id.text1, items) {
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                val v = super.getView(position, convertView, parent)
+                val t1 = v.findViewById<TextView>(android.R.id.text1)
+                val t2 = v.findViewById<TextView>(android.R.id.text2)
+                val parts = getItem(position)?.split("\n", limit = 2) ?: listOf("")
+                t1.text = parts.getOrElse(0) { "" }
+                t2.text = parts.getOrElse(1) { "" }
+                t1.setTextColor(text); t2.setTextColor(sub)
+                t1.textSize = 16f; t2.textSize = 13f
+                v.setPadding(24, 20, 24, 20)
+                return v
+            }
+        }
+    }
+
     private fun applyTheme() {
         val light = prefs.themeMode == "light"
         val root = findViewById<View>(R.id.root)
@@ -315,16 +338,23 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.defaultDialerHint).setTextColor(text)
         listOf(R.id.navRecents,R.id.navContacts,R.id.navPhone,R.id.navSettings).forEach { findViewById<TextView>(it).setTextColor(text) }
         fun walk(v: View) {
-            if (v is TextView && v !is Button) v.setTextColor(if (v.text.toString().contains("Недавние")||v.text.toString().contains("Контакты")||v.text.toString().contains("Телефон")||v.text.toString().contains("Настройки")) text else sub)
-            if (v is SwitchMaterial) v.setTextColor(text)
+            if (v is SwitchMaterial) { v.setTextColor(text); return@walk }
+            if (v is Button) return@walk
+            if (v is TextView) v.setTextColor(text)
             if (v is ViewGroup) for (i in 0 until v.childCount) walk(v.getChildAt(i))
         }
         walk(findViewById(R.id.pageSettings))
+        walk(findViewById(R.id.pageRecents))
+        walk(findViewById(R.id.pageContacts))
+        walk(findViewById(R.id.pagePhone))
         findViewById<View>(R.id.floatingKeypad).alpha = 1f
         findViewById<View>(R.id.bottomNav).alpha = 1f
         val grid = findViewById<GridLayout>(R.id.keypadGrid)
         for (i in 0 until grid.childCount) { (grid.getChildAt(i) as? TextView)?.setTextColor(text) }
         findViewById<View>(R.id.navBubble).alpha = if (light) 0.35f else 1f
+        val div = if (light) 0x22000000 else 0x22FFFFFF
+        recentsList.divider = android.graphics.drawable.ColorDrawable(div); recentsList.dividerHeight = (1 * resources.displayMetrics.density).toInt()
+        contactsList.divider = android.graphics.drawable.ColorDrawable(div); contactsList.dividerHeight = (1 * resources.displayMetrics.density).toInt()
     }
 
     private fun applyGlass() {
