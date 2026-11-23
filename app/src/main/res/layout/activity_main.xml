@@ -49,8 +49,10 @@
 
             <ScrollView android:id="@+id/pageSettings" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingBottom="120dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Общие" android:textColor="#FF7CC4FF" android:textStyle="bold" android:textSize="14sp" android:layout_marginTop="4dp" android:layout_marginBottom="4dp"/>
                     <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/rightHandSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Режим правой руки (Orbit)" android:textColor="@color/white" />
                     <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/hapticSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Виброотклик" android:textColor="@color/white" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Внешний вид" android:textColor="#FF7CC4FF" android:textStyle="bold" android:textSize="14sp" android:layout_marginTop="14dp" android:layout_marginBottom="4dp"/>
                     <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/themeSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Светлая тема (Google style)" android:textColor="@color/white" />
                     <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/distortionSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Искажение/стекло при нажатии" android:textColor="@color/white" />
                     <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Сила искажения" android:textColor="#CCFFFFFF" android:layout_marginTop="8dp"/>
@@ -61,7 +63,8 @@
                     <SeekBar android:id="@+id/scaleSeek" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="70"/>
                     <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Размер кнопок (Orbit)" android:textColor="#CCFFFFFF" android:layout_marginTop="8dp"/>
                     <SeekBar android:id="@+id/orbitScaleSeek" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="70"/>
-                    <Button android:id="@+id/endSoundBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Звук сброса: Android"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Звонки" android:textColor="#FF7CC4FF" android:textStyle="bold" android:textSize="14sp" android:layout_marginTop="14dp" android:layout_marginBottom="4dp"/>
+                    <Button android:id="@+id/endSoundBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Звук сброса: Android"/>
                     <Button android:id="@+id/shapeBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Форма кнопок: Круг"/>
                     <Button android:id="@+id/requestDefaultBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Сделать звонилкой по умолчанию" />
                 </LinearLayout>
