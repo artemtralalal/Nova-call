@@ -40,25 +40,27 @@ class InCallActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_incall)
-        prefs = DialerPrefs(this)
-        callStateText = findViewById(R.id.callStateText)
-        callerText = findViewById(R.id.callerText)
-        controls = findViewById(R.id.inCallControls)
-        orbitStrip = findViewById(R.id.orbitStrip)
-        extraRow = findViewById(R.id.extraRow)
-        answerBtn = findViewById(R.id.answerBtn)
-        hangupBtn = findViewById(R.id.hangupBtn)
-        muteBtn = findViewById(R.id.muteBtn)
-        speakerBtn = findViewById(R.id.speakerBtn)
-        holdBtn = findViewById(R.id.holdBtn)
-        expandBtn = findViewById(R.id.expandBtn)
+        try {
+            setContentView(R.layout.activity_incall)
+            prefs = DialerPrefs(this)
+            callStateText = findViewById(R.id.callStateText)
+            callerText = findViewById(R.id.callerText)
+            controls = findViewById(R.id.inCallControls)
+            orbitStrip = findViewById(R.id.orbitStrip)
+            extraRow = findViewById(R.id.extraRow)
+            answerBtn = findViewById(R.id.answerBtn)
+            hangupBtn = findViewById(R.id.hangupBtn)
+            muteBtn = findViewById(R.id.muteBtn)
+            speakerBtn = findViewById(R.id.speakerBtn)
+            holdBtn = findViewById(R.id.holdBtn)
+            expandBtn = findViewById(R.id.expandBtn)
 
-        applyMode()
-        setupDrag(controls)
-        setupDrag(orbitStrip)
-        setupButtons()
-        handleIntent(intent)
+            applyMode()
+            setupDrag(controls)
+            setupDrag(orbitStrip)
+            setupButtons()
+            handleIntent(intent)
+        } catch (_: Exception) { finish() }
     }
 
     override fun onNewIntent(intent: Intent) {
