@@ -1,29 +1,39 @@
 package com.vibe.dialer
 
+import android.content.Intent
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Bundle
 import android.telecom.Call
+import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 class InCallActivity : AppCompatActivity() {
+    private lateinit var prefs: DialerPrefs
     private lateinit var callStateText: TextView
     private lateinit var callerText: TextView
     private lateinit var controls: LinearLayout
+    private lateinit var orbitStrip: LinearLayout
+    private lateinit var extraRow: LinearLayout
     private lateinit var answerBtn: ImageButton
     private lateinit var hangupBtn: ImageButton
     private lateinit var muteBtn: ImageButton
     private lateinit var speakerBtn: ImageButton
-    private lateinit var prefs: DialerPrefs
+    private lateinit var holdBtn: ImageButton
+    private lateinit var expandBtn: ImageButton
     private var muted = false
     private var speaker = false
+    private var expanded = false
 
     private val callListener: (Call?) -> Unit = { runOnUiThread { updateCall(it) } }
 
@@ -34,43 +44,85 @@ class InCallActivity : AppCompatActivity() {
         callStateText = findViewById(R.id.callStateText)
         callerText = findViewById(R.id.callerText)
         controls = findViewById(R.id.inCallControls)
+        orbitStrip = findViewById(R.id.orbitStrip)
+        extraRow = findViewById(R.id.extraRow)
         answerBtn = findViewById(R.id.answerBtn)
         hangupBtn = findViewById(R.id.hangupBtn)
         muteBtn = findViewById(R.id.muteBtn)
         speakerBtn = findViewById(R.id.speakerBtn)
+        holdBtn = findViewById(R.id.holdBtn)
+        expandBtn = findViewById(R.id.expandBtn)
 
-        controls.translationX = prefs.inCallOffsetX
-        controls.translationY = prefs.inCallOffsetY
-        setupDrag()
+        applyMode()
+        setupDrag(controls)
+        setupDrag(orbitStrip)
         setupButtons()
     }
 
     override fun onStart() { super.onStart(); CallManager.addListener(callListener) }
     override fun onStop() { CallManager.removeListener(callListener); super.onStop() }
 
-    private fun setupButtons() {
-        answerBtn.setOnClickListener { animatePress(it); CallManager.answer() }
-        hangupBtn.setOnClickListener { animatePress(it); hangupAnim { CallManager.hangup(); finish() } }
-        muteBtn.setOnClickListener {
-            animatePress(it); muted = !muted
-            val am = getSystemService(AUDIO_SERVICE) as AudioManager
-            am.isMicrophoneMute = muted
-            muteBtn.alpha = if (muted) 1f else 0.7f
-        }
-        speakerBtn.setOnClickListener {
-            animatePress(it); speaker = !speaker
-            val am = getSystemService(AUDIO_SERVICE) as AudioManager
-            am.isSpeakerphoneOn = speaker
-            speakerBtn.alpha = if (speaker) 1f else 0.7f
+    private fun applyMode() {
+        val right = prefs.inCallRight
+        val lp = controls.layoutParams as FrameLayout.LayoutParams
+        val stripLp = orbitStrip.layoutParams as FrameLayout.LayoutParams
+        if (prefs.rightHandMode) {
+            orbitStrip.isVisible = true
+            controls.isVisible = false
+            lp.gravity = Gravity.CENTER_VERTICAL or if (right) Gravity.END else Gravity.START
+            lp.bottomMargin = 0; lp.marginEnd = (8 * resources.displayMetrics.density).roundToInt(); lp.marginStart = (8 * resources.displayMetrics.density).roundToInt()
+            stripLp.gravity = Gravity.CENTER_VERTICAL or if (right) Gravity.END else Gravity.START
+            orbitStrip.layoutParams = stripLp
+            controls.layoutParams = lp
+        } else {
+            orbitStrip.isVisible = false
+            controls.isVisible = true
+            lp.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            lp.bottomMargin = (56 * resources.displayMetrics.density).roundToInt()
+            controls.layoutParams = lp
         }
     }
 
+    private fun setupButtons() {
+        orbitStrip.setOnClickListener { pressAnim(it); showControlsFromStrip() }
+        expandBtn.setOnClickListener { pressAnim(it); expanded = !expanded; extraRow.isVisible = expanded; expandBtn.rotation = if (expanded) 180f else 0f }
+        answerBtn.setOnClickListener { pressAnim(it); CallManager.answer() }
+        hangupBtn.setOnClickListener { pressAnim(it); endCallUi { CallManager.hangup(); finish() } }
+        muteBtn.setOnClickListener {
+            pressAnim(it); muted = !muted
+            try { (getSystemService(AUDIO_SERVICE) as AudioManager).isMicrophoneMute = muted } catch (_: Exception) {}
+            muteBtn.alpha = if (muted) 1f else 0.75f
+        }
+        speakerBtn.setOnClickListener {
+            pressAnim(it); speaker = !speaker
+            try { (getSystemService(AUDIO_SERVICE) as AudioManager).isSpeakerphoneOn = speaker } catch (_: Exception) {}
+            speakerBtn.alpha = if (speaker) 1f else 0.75f
+        }
+        holdBtn.setOnClickListener {
+            pressAnim(it)
+            val c = CallManager.currentCall ?: return@setOnClickListener
+            if (c.state == Call.STATE_HOLDING) c.unhold() else c.hold()
+        }
+        findViewById<ImageButton>(R.id.addCallBtn).setOnClickListener {
+            pressAnim(it); CallManager.currentCall?.hold(); startActivity(Intent(Intent.ACTION_DIAL))
+        }
+        findViewById<ImageButton>(R.id.dialNewBtn).setOnClickListener {
+            pressAnim(it); CallManager.hangup(); startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+        }
+        findViewById<ImageButton>(R.id.mergeBtn).setOnClickListener { pressAnim(it) /* merge requires conference; placeholder */ }
+    }
+
+    private fun showControlsFromStrip() {
+        orbitStrip.isVisible = false
+        controls.isVisible = true
+        controls.alpha = 0f; controls.translationX = if (prefs.inCallRight) 120f else -120f
+        controls.animate().alpha(1f).translationX(0f).setDuration(260).setInterpolator(android.view.animation.OvershootInterpolator(0.9f)).start()
+    }
+
     private fun updateCall(call: Call?) {
-        if (call == null) { callStateText.text = "Завершено"; hangupAnim { finish() }; return }
-        val num = call.details?.handle?.schemeSpecificPart ?: "Неизвестный номер"
-        callerText.text = num
-        val state = call.state
-        callStateText.text = when (state) {
+        if (call == null) { callStateText.text = "Завершено"; endCallUi { if (!isFinishing) finish() }; return }
+        callerText.text = call.details?.handle?.schemeSpecificPart ?: "Неизвестный номер"
+        callStateText.text = when (call.state) {
             Call.STATE_DIALING -> "Набор..."
             Call.STATE_RINGING -> "Входящий звонок"
             Call.STATE_CONNECTING -> "Соединение..."
@@ -79,13 +131,13 @@ class InCallActivity : AppCompatActivity() {
             Call.STATE_DISCONNECTED -> "Завершено"
             else -> "Звонок"
         }
-        answerBtn.isVisible = state == Call.STATE_RINGING
-        if (state == Call.STATE_DISCONNECTED) hangupAnim { finish() }
+        answerBtn.isVisible = call.state == Call.STATE_RINGING
+        if (call.state == Call.STATE_DISCONNECTED) endCallUi { if (!isFinishing) finish() }
     }
 
-    private fun setupDrag() {
+    private fun setupDrag(target: View) {
         var downX = 0f; var downY = 0f; var startX = 0f; var startY = 0f; var dragging = false
-        controls.setOnTouchListener { v, e ->
+        target.setOnTouchListener { v, e ->
             when (e.actionMasked) {
                 MotionEvent.ACTION_DOWN -> { downX = e.rawX; downY = e.rawY; startX = v.translationX; startY = v.translationY; dragging = false; true }
                 MotionEvent.ACTION_MOVE -> {
@@ -95,8 +147,16 @@ class InCallActivity : AppCompatActivity() {
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (dragging) { prefs.inCallOffsetX = v.translationX; prefs.inCallOffsetY = v.translationY }
-                    else v.performClick()
+                    if (dragging) {
+                        val centerX = v.x + v.width / 2
+                        val right = centerX > resources.displayMetrics.widthPixels / 2
+                        prefs.inCallRight = right
+                        val lp = v.layoutParams as FrameLayout.LayoutParams
+                        lp.gravity = Gravity.CENTER_VERTICAL or if (right) Gravity.END else Gravity.START
+                        v.layoutParams = lp; v.translationX = 0f
+                        prefs.inCallOffsetY = v.translationY
+                        if (v == controls && prefs.rightHandMode) { controls.isVisible = false; orbitStrip.isVisible = true; applyMode() }
+                    } else v.performClick()
                     true
                 }
                 else -> false
@@ -104,15 +164,15 @@ class InCallActivity : AppCompatActivity() {
         }
     }
 
-    private fun animatePress(v: View) {
-        v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-        v.animate().cancel(); v.scaleX = 0.92f; v.scaleY = 0.92f
-        v.animate().scaleX(1f).scaleY(1f).setDuration(180).setInterpolator(android.view.animation.OvershootInterpolator(2f)).start()
+    private fun pressAnim(v: View) {
+        if (prefs.haptic) v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        v.animate().cancel(); v.scaleX = 0.92f; v.scaleY = 0.92f; v.alpha = 0.9f
+        v.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(180).setInterpolator(android.view.animation.OvershootInterpolator(2f)).start()
     }
 
-    private fun hangupAnim(end: () -> Unit) {
-        hangupBtn.animate().scaleX(0.7f).scaleY(0.7f).alpha(0.5f).setDuration(120).withEndAction {
-            hangupBtn.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(120).withEndAction(end).start()
+    private fun endCallUi(end: () -> Unit) {
+        controls.animate().translationY(200f).alpha(0f).setDuration(220).withEndAction {
+            findViewById<View>(R.id.incallRoot).animate().alpha(0.4f).setDuration(180).withEndAction(end).start()
         }.start()
     }
 }
