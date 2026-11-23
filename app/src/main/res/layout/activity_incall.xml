@@ -62,4 +62,19 @@
             <ImageButton android:id="@+id/hangupBtn" android:layout_width="72dp" android:layout_height="72dp" android:layout_marginStart="16dp" android:background="@drawable/bg_hangup" android:src="@android:drawable/ic_menu_close_clear_cancel" android:tint="@color/white"/>
         </LinearLayout>
     </LinearLayout>
+    <!-- Google style swipe -->
+    <FrameLayout android:id="@+id/googleSwipe" android:layout_width="280dp" android:layout_height="72dp" android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="60dp" android:background="@drawable/bg_glass_panel" android:visibility="gone">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical|start" android:layout_marginStart="20dp" android:text="Отклонить" android:textColor="#FFFF5A6A"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical|end" android:layout_marginEnd="20dp" android:text="Ответить" android:textColor="#FF4CD964"/>
+        <ImageButton android:id="@+id/swipeKnob" android:layout_width="60dp" android:layout_height="60dp" android:layout_gravity="center" android:background="@drawable/bg_call" android:src="@android:drawable/ic_menu_call" android:tint="@color/white"/>
+    </FrameLayout>
+
+    <!-- Xiaomi incoming -->
+    <LinearLayout android:id="@+id/xiaomiIncoming" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="60dp" android:gravity="center" android:orientation="horizontal" android:visibility="gone">
+        <ImageButton android:id="@+id/xiaomiDecline" android:layout_width="76dp" android:layout_height="76dp" android:background="@drawable/bg_hangup" android:src="@android:drawable/ic_menu_close_clear_cancel" android:tint="@color/white"/>
+        <ImageButton android:id="@+id/xiaomiAnswer" android:layout_width="76dp" android:layout_height="76dp" android:layout_marginStart="64dp" android:background="@drawable/bg_call" android:src="@android:drawable/ic_menu_call" android:tint="@color/white"/>
+    </LinearLayout>
+
+    <ImageButton android:id="@+id/minimizeBtn" android:layout_width="44dp" android:layout_height="44dp" android:layout_gravity="top|start" android:layout_margin="16dp" android:background="@drawable/bg_glass_button" android:src="@android:drawable/arrow_down_float" android:tint="@color/white"/>
+
 </FrameLayout>
