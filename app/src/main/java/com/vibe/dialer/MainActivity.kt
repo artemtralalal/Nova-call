@@ -248,7 +248,7 @@ class MainActivity : AppCompatActivity() {
         right.isChecked = prefs.rightHandMode; haptic.isChecked = prefs.haptic; theme.isChecked = prefs.themeMode == "light"
         distort.isChecked = prefs.distortion; distSeek.progress = prefs.distortionAmount
         glass.progress = prefs.glassIntensity; scale.progress = (prefs.buttonScale - 70).coerceIn(0,70); orbitScale.progress = (prefs.orbitScale - 70).coerceIn(0,70)
-        fun updEnd() { endSoundBtn.text = "Звук сброса: " + when(prefs.endSound){ "samsung"->"Samsung"; "skype"->"Skype"; "none"->"Без звука"; else->"Android" } }
+        fun updEnd() { endSoundBtn.text = "Звук сброса: " + when(prefs.endSound){ "samsung"->"Samsung"; "skype"->"Skype"; "facetime"->"FaceTime"; "none"->"Без звука"; else->"Android" } }
         fun updShape() { shapeBtn.text = "Форма кнопок: " + when(prefs.buttonShape){ "rounded"->"Скруглённая"; "squircle"->"Squircle"; else->"Круг" } }
         updEnd(); updShape()
         right.setOnCheckedChangeListener { _, c -> prefs.rightHandMode = c; applyRightHandMode(); buildKeypad() }
@@ -259,7 +259,7 @@ class MainActivity : AppCompatActivity() {
         glass.setOnSeekBarChangeListener(simpleSeek { prefs.glassIntensity = it; applyGlass() })
         scale.setOnSeekBarChangeListener(simpleSeek { prefs.buttonScale = it + 70; buildKeypad() })
         orbitScale.setOnSeekBarChangeListener(simpleSeek { prefs.orbitScale = it + 70; buildKeypad(); applyRightHandMode() })
-        endSoundBtn.setOnClickListener { val opts = arrayOf("Android","Samsung","Skype","Без звука"); val vals = arrayOf("android","samsung","skype","none"); android.app.AlertDialog.Builder(this).setTitle("Звук сброса").setItems(opts){_,w-> prefs.endSound = vals[w]; updEnd() }.show() }
+        endSoundBtn.setOnClickListener { val opts = arrayOf("Android (Pixel)","Samsung","Skype","FaceTime","Без звука"); val vals = arrayOf("android","samsung","skype","facetime","none"); android.app.AlertDialog.Builder(this).setTitle("Звук сброса").setItems(opts){_,w-> prefs.endSound = vals[w]; updEnd() }.show() }
         shapeBtn.setOnClickListener { val opts = arrayOf("Круг","Скруглённая","Squircle"); val vals = arrayOf("circle","rounded","squircle"); android.app.AlertDialog.Builder(this).setTitle("Форма кнопок").setItems(opts){_,w-> prefs.buttonShape = vals[w]; updShape(); buildKeypad() }.show() }
         findViewById<Button>(R.id.requestDefaultBtn).setOnClickListener { requestDefaultDialer() }
     }
