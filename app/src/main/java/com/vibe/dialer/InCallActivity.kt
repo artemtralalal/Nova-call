@@ -196,7 +196,6 @@ class InCallActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.dialNewBtn).setOnClickListener {
             pressAnim(it); CallManager.hangup(); startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
         }
-        findViewById<ImageButton>(R.id.mergeBtn).setOnClickListener { pressAnim(it) }
     }
 
     private fun applyAudio() {
