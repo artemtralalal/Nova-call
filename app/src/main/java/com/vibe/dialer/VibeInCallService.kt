@@ -77,16 +77,30 @@ class VibeInCallService : InCallService() {
                 try { builder.setStyle(NotificationCompat.CallStyle.forIncomingCall(person, hangupIntent, answerIntent)) } catch (_: Throwable) {}
             }
         } else {
+            builder.setFullScreenIntent(openIntent, true)
             builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Сбросить", hangupIntent)
             if (Build.VERSION.SDK_INT >= 31) {
                 try { builder.setStyle(NotificationCompat.CallStyle.forOngoingCall(person, hangupIntent)) } catch (_: Throwable) {}
             }
         }
         val n = builder.build()
-        if (state == Call.STATE_RINGING || state == Call.STATE_ACTIVE || state == Call.STATE_DIALING || state == Call.STATE_CONNECTING || state == Call.STATE_HOLDING) {
-            nm.notify(1001, n)
-        } else {
-            nm.cancel(1001)
+        try {
+            if (state == Call.STATE_RINGING || state == Call.STATE_ACTIVE || state == Call.STATE_DIALING || state == Call.STATE_CONNECTING || state == Call.STATE_HOLDING) {
+                nm.notify(1001, n)
+            } else {
+                nm.cancel(1001)
+            }
+        } catch (_: Throwable) {
+            try {
+                val simple = NotificationCompat.Builder(this, CH)
+                    .setSmallIcon(android.R.drawable.ic_menu_call)
+                    .setContentTitle(num)
+                    .setContentText("Звонок")
+                    .setContentIntent(openIntent)
+                    .setOngoing(true)
+                    .build()
+                nm.notify(1001, simple)
+            } catch (_: Throwable) {}
         }
     }
 
