@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pageRecents: LinearLayout
     private lateinit var pageContacts: LinearLayout
     private lateinit var pagePhone: LinearLayout
+    private lateinit var pageProfile: LinearLayout
     private lateinit var pageSettings: ScrollView
     private lateinit var titleText: TextView
     private lateinit var recentsList: ListView
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         pageRecents = findViewById(R.id.pageRecents)
         pageContacts = findViewById(R.id.pageContacts)
         pagePhone = findViewById(R.id.pagePhone)
+        pageProfile = findViewById(R.id.pageProfile)
         pageSettings = findViewById(R.id.pageSettings)
         titleText = findViewById(R.id.titleText)
         recentsList = findViewById(R.id.recentsList)
@@ -70,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         setupSettings()
         setupActions()
         setupRecentsFilters()
+        setupProfile()
         applyRightHandMode()
         navIndex = prefs.navIndex
         selectNav(navIndex, animateBubble = false)
@@ -97,6 +100,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.backspaceBtn).setOnClickListener { if (number.isNotEmpty()) { number.deleteAt(number.length - 1); renderNumber() } }
         findViewById<ImageButton>(R.id.backspaceBtn).setOnLongClickListener { number.clear(); renderNumber(); true }
         findViewById<ImageButton>(R.id.callBtn).setOnClickListener { placeCall(number.toString()) }
+        findViewById<Button>(R.id.hideNumberBtn).setOnClickListener {
+            val ops = arrayOf("Tele2 / МТС / Билайн / МегаФон (Россия) - #31#","T-Mobile - #31#","Vodafone - #31#","AT&T - *67","Verizon - *67")
+            val codes = arrayOf("#31#","#31#","#31#","*67","*67")
+            android.app.AlertDialog.Builder(this).setTitle("Скрыть номер").setItems(ops){_,w-> number.insert(0, codes[w]); renderNumber() }.show()
+        }
     }
 
     private fun buildKeypad() {
@@ -112,6 +120,10 @@ class MainActivity : AppCompatActivity() {
                 setTextColor(0xFFFFFFFF.toInt())
                 background = ContextCompat.getDrawable(this@MainActivity, R.drawable.bg_key)
                 setOnClickListener { pressAnim(it); if (prefs.haptic) it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); number.append(k); renderNumber() }
+                setOnLongClickListener {
+                    if (k == "0") { if (number.isNotEmpty() && number.last() == '0') number.deleteCharAt(number.length-1); number.append('+'); renderNumber(); true }
+                    else false
+                }
             }
             val lp = GridLayout.LayoutParams().apply {
                 width = 0; height = size
@@ -146,23 +158,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupNav() {
-        val labels = listOf(findViewById<TextView>(R.id.navRecents), findViewById<TextView>(R.id.navContacts), findViewById<TextView>(R.id.navPhone), findViewById<TextView>(R.id.navSettings))
+        val labels = listOf(findViewById<TextView>(R.id.navRecents), findViewById<TextView>(R.id.navContacts), findViewById<TextView>(R.id.navPhone), findViewById<TextView>(R.id.navProfile), findViewById<TextView>(R.id.navSettings))
         bottomNav.post { updateBubble(animate = false) }
         labels.forEachIndexed { i, v -> v.setOnClickListener { pressAnim(it); selectNav(i, animateBubble = true) } }
         var downX = 0f; var startTx = 0f; var dragging = false
         navBubble.setOnTouchListener { v, e ->
-            val w = ((bottomNav.width - bottomNav.paddingLeft - bottomNav.paddingRight) / 4f).coerceAtLeast(1f)
+            val w = ((bottomNav.width - bottomNav.paddingLeft - bottomNav.paddingRight) / 5f).coerceAtLeast(1f)
             when (e.actionMasked) {
                 MotionEvent.ACTION_DOWN -> { downX = e.rawX; startTx = v.translationX; dragging = false; true }
-                MotionEvent.ACTION_MOVE -> { val dx = e.rawX - downX; if (abs(dx) > 8) dragging = true; v.translationX = (startTx + dx).coerceIn(0f, w * 3); true }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> { val idx = ((v.translationX + w / 2) / w).roundToInt().coerceIn(0, 3); selectNav(idx, animateBubble = true); if (!dragging) v.performClick(); true }
+                MotionEvent.ACTION_MOVE -> { val dx = e.rawX - downX; if (abs(dx) > 8) dragging = true; v.translationX = (startTx + dx).coerceIn(0f, w * 4); true }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> { val idx = ((v.translationX + w / 2) / w).roundToInt().coerceIn(0, 4); selectNav(idx, animateBubble = true); if (!dragging) v.performClick(); true }
                 else -> false
             }
         }
     }
 
     private fun updateBubble(animate: Boolean) {
-        val w = ((bottomNav.width - bottomNav.paddingLeft - bottomNav.paddingRight) / 4f)
+        val w = ((bottomNav.width - bottomNav.paddingLeft - bottomNav.paddingRight) / 5f)
         if (w <= 0) return
         val lp = navBubble.layoutParams as FrameLayout.LayoutParams
         lp.width = w.roundToInt(); lp.height = FrameLayout.LayoutParams.MATCH_PARENT; navBubble.layoutParams = lp
@@ -173,7 +185,7 @@ class MainActivity : AppCompatActivity() {
     private fun selectNav(index: Int, animateBubble: Boolean) {
         val old = navIndex
         navIndex = index; prefs.navIndex = index
-        val pages = listOf(pageRecents, pageContacts, pagePhone, pageSettings)
+        val pages = listOf(pageRecents, pageContacts, pagePhone, pageProfile, pageSettings)
         pages.forEachIndexed { i, v ->
             val show = i == index
             if (show && v.visibility != View.VISIBLE) {
@@ -185,9 +197,9 @@ class MainActivity : AppCompatActivity() {
                 } else { v.translationX = 0f; v.alpha = 1f }
             } else if (!show) { v.isVisible = false }
         }
-        titleText.text = when (index) { 0 -> "Недавние"; 1 -> "Контакты"; 3 -> "Настройки"; else -> "Телефон" }
+        titleText.text = when (index) { 0 -> "Недавние"; 1 -> "Контакты"; 2 -> "Телефон"; 3 -> "Профиль"; else -> "Настройки" }
         bottomNav.post { updateBubble(animateBubble) }
-        if (index == 0) loadRecents(); if (index == 1) loadContacts()
+        if (index == 0) loadRecents(); if (index == 1) loadContacts(); if (index == 3) updateProfileUi()
     }
 
     private fun setupRecentsFilters() {
@@ -228,7 +240,7 @@ class MainActivity : AppCompatActivity() {
         }
         recentsList.adapter = themedAdapter(items)
         recentsList.setOnItemClickListener { _, _, pos, _ -> number.clear(); number.append(nums.getOrNull(pos) ?: ""); renderNumber(); selectNav(2, true) }
-        recentsList.setOnItemLongClickListener { _, _, pos, _ -> placeCall(nums.getOrNull(pos) ?: ""); true }
+        recentsList.setOnItemLongClickListener { _, _, pos, _ -> showNumberMenu(nums.getOrNull(pos) ?: ""); true }
     }
 
     private fun loadContacts() {
@@ -249,6 +261,7 @@ class MainActivity : AppCompatActivity() {
         }
         contactsList.adapter = themedAdapter(items)
         contactsList.setOnItemClickListener { _, _, pos, _ -> placeCall(nums.getOrNull(pos) ?: "") }
+        contactsList.setOnItemLongClickListener { _, _, pos, _ -> showNumberMenu(nums.getOrNull(pos) ?: ""); true }
     }
 
     private fun setupSettings() {
@@ -308,6 +321,51 @@ class MainActivity : AppCompatActivity() {
         }
         floatingKeypad.layoutParams = kpLp; showKeypadBtn.layoutParams = showLp; bottomNav.layoutParams = navLp
         floatingKeypad.requestLayout(); bottomNav.requestLayout(); bottomNav.post { updateBubble(false) }
+    }
+
+    private fun setupProfile() {
+        findViewById<Button>(R.id.changeAvatarBtn).setOnClickListener {
+            val i = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
+            @Suppress("DEPRECATION") startActivityForResult(i, 2002)
+        }
+        findViewById<Button>(R.id.changeNumberBtn).setOnClickListener {
+            val input = EditText(this).apply { hint = "Новый номер"; setText(prefs.profilePendingNumber.ifBlank { prefs.profileNumber }) }
+            android.app.AlertDialog.Builder(this).setTitle("Симуляция номера").setView(input)
+                .setPositiveButton("Сменить") { _, _ ->
+                    val n = input.text.toString().trim(); if (n.isNotBlank()) { prefs.profilePendingNumber = n; prefs.profilePendingUntil = System.currentTimeMillis() + 2 * 60 * 1000L; updateProfileUi() }
+                }.setNegativeButton("Отмена", null).show()
+        }
+        updateProfileUi()
+    }
+
+    private fun updateProfileUi() {
+        val numTv = findViewById<TextView>(R.id.profileNumber)
+        val timerTv = findViewById<TextView>(R.id.profileTimer)
+        val av = findViewById<ImageView>(R.id.profileAvatar)
+        if (prefs.profileAvatar.isNotBlank()) try { av.setImageURI(Uri.parse(prefs.profileAvatar)) } catch (_: Exception) {}
+        val pending = prefs.profilePendingNumber
+        val until = prefs.profilePendingUntil
+        val now = System.currentTimeMillis()
+        if (pending.isNotBlank() && until > now) {
+            val left = (until - now) / 1000
+            numTv.text = prefs.profileNumber
+            timerTv.text = "Проверка номера... новый номер ${pending} через ${left/60}:${String.format("%02d", left%60)}"
+            timerTv.postDelayed({ if (!isFinishing) updateProfileUi() }, 1000)
+        } else {
+            if (pending.isNotBlank() && until > 0 && now >= until) { prefs.profileNumber = pending; prefs.profilePendingNumber = ""; prefs.profilePendingUntil = 0L }
+            numTv.text = prefs.profileNumber
+            timerTv.text = "Номер подтверждён (симуляция в приложении)"
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 2002 && resultCode == RESULT_OK) {
+            val uri = data?.data ?: return
+            try { contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: Exception) {}
+            prefs.profileAvatar = uri.toString(); updateProfileUi()
+        }
     }
 
     private fun themedAdapter(items: List<String>): ArrayAdapter<String> {
@@ -384,6 +442,21 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CALL_PHONE, Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS, Manifest.permission.READ_CALL_LOG), 1002); return
         }
         startActivity(Intent(Intent.ACTION_CALL, Uri.parse("tel:${Uri.encode(num)}")))
+    }
+
+    private fun addContact(num: String) {
+        val i = Intent(Intent.ACTION_INSERT).apply {
+            type = ContactsContract.RawContacts.CONTENT_TYPE
+            putExtra(ContactsContract.Intents.Insert.PHONE, num)
+        }
+        startActivity(i)
+    }
+
+    private fun showNumberMenu(num: String) {
+        val opts = arrayOf("Позвонить", "Добавить контакт", "Скопировать номер")
+        android.app.AlertDialog.Builder(this).setTitle(num).setItems(opts) { _, w ->
+            when (w) { 0 -> placeCall(num); 1 -> addContact(num); 2 -> { val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager; cm.setPrimaryClip(android.content.ClipData.newPlainText("number", num)); Toast.makeText(this, "Скопировано", Toast.LENGTH_SHORT).show() } }
+        }.show()
     }
 
     private fun pressAnim(v: View) {
