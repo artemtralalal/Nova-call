@@ -5,6 +5,11 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_main">
 
+    <com.vibe.dialer.DynamicCallBackgroundView
+        android:id="@+id/dynamicBg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <LinearLayout
         android:id="@+id/callInfo"
         android:layout_width="match_parent"
